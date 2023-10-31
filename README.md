@@ -13,16 +13,6 @@ The script operates by executing each driver package with specific parameters to
 ```plaintext
 [driverpackage.exe] "/VERYSILENT /DIR=[extractiondir] /EXTRACT=YES"
 ```
-
-- `"/VERYSILENT"`: This parameter ensures that the extraction process runs silently, meaning that it does not display any user interface or prompts from the driver package installer.
-- `"/DIR=[extractiondir]"`: This parameter specifies the directory where the driver files will be extracted. The `[extractiondir]` placeholder is dynamically replaced by the actual path determined at runtime, based on user input or default settings.
-- `"/EXTRACT=YES"`: This parameter instructs the driver package to perform the extraction of files rather than proceeding with a full installation.
-
-## Optional Parameters
-
-- `-ExtractDir [string]`: This specifies the folder where files will be extracted. If not provided, it defaults to a subdirectory named "extracted" within the driver directory.
-- `-DriverDir [string]`: This defines the directory containing the driver files. If left unspecified, the script will use its own location as the default.
-
 ## Usage
 
 To use this script, open PowerShell, navigate to the script's directory, and enter the following command:
@@ -30,6 +20,11 @@ To use this script, open PowerShell, navigate to the script's directory, and ent
 ```powershell
 .\scriptName.ps1 -ExtractDir "Path\To\Extract\Directory" -DriverDir "Path\To\Driver\Directory"
 ```
+
+### Optional Parameters
+
+- `-ExtractDir [string]`: This specifies the folder where files will be extracted. If not provided, it defaults to a subdirectory named "extracted" within the driver directory.
+- `-DriverDir [string]`: This defines the directory containing the driver files. If left unspecified, the script will use its own location as the default.
 
 ### 1. Administrative Privileges and UAC Prompt
 
