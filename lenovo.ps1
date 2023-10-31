@@ -91,15 +91,21 @@ if (-not (Test-Admin)) {
     }
 }
 
-# Get the path to the script
-$scriptLocation = Split-Path -Parent $MyInvocation.MyCommand.Definition
+# Check if DriverDir is set
+if ($DriverDir) {
+    # If DriverDir is set, use that value and do not show the GUI
+    $folderPath = $DriverDir
+}
+else {
+    # Get the path to the script
+    $scriptLocation = Split-Path -Parent $MyInvocation.MyCommand.Definition
 
-# Load the necessary assemblies for the driverdir prompt
-Add-Type -AssemblyName PresentationFramework
-Add-Type -AssemblyName System.Windows.Forms
+    # Load the necessary assemblies for the driverdir prompt
+    Add-Type -AssemblyName PresentationFramework
+    Add-Type -AssemblyName System.Windows.Forms
 
-# Define the XAML for the driver directory prompt
-$xaml = @"
+    # Define the XAML for the driver directory prompt
+    $xaml = @"
 <Window xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Select Directory" Height="300" Width="500">
@@ -124,51 +130,59 @@ $xaml = @"
 </Window>
 "@
 
-# Load the XAML and create the window for the driver directory prompt
-$reader = [System.Xml.XmlReader]::Create([System.IO.StringReader]::new($xaml))
-$window = [Windows.Markup.XamlReader]::Load($reader)
+    # Load the XAML and create the window for the driver directory prompt
+    $reader = [System.Xml.XmlReader]::Create([System.IO.StringReader]::new($xaml))
+    $window = [Windows.Markup.XamlReader]::Load($reader)
 
-# Get references to the controls for the driver directory prompt
-$pathTextBox = $window.FindName("pathTextBox")
-$browseButton = $window.FindName("browseButton")
-$okButton = $window.FindName("okButton")
+    # Get references to the controls for the driver directory prompt
+    $pathTextBox = $window.FindName("pathTextBox")
+    $browseButton = $window.FindName("browseButton")
+    $okButton = $window.FindName("okButton")
 
-# Set the initial path in the text box for the driver directory prompt
-$pathTextBox.Text = $scriptLocation
+    # Set the initial path in the text box for the driver directory prompt
+    $pathTextBox.Text = $scriptLocation
 
-# If browse is clicked in the driver directory prompt, open a folder browser dialog
-$browseButton.Add_Click({
-        $folderBrowser = New-Object System.Windows.Forms.FolderBrowserDialog
-        $folderBrowser.SelectedPath = $pathTextBox.Text
-        if ($folderBrowser.ShowDialog() -eq "OK") {
-            $pathTextBox.Text = $folderBrowser.SelectedPath
-        }
-    })
+    # If browse is clicked in the driver directory prompt, open a folder browser dialog
+    $browseButton.Add_Click({
+            $folderBrowser = New-Object System.Windows.Forms.FolderBrowserDialog
+            $folderBrowser.SelectedPath = $pathTextBox.Text
+            if ($folderBrowser.ShowDialog() -eq "OK") {
+                $pathTextBox.Text = $folderBrowser.SelectedPath
+            }
+        })
 
-# if OK is clicked, set the driver directory to the path in the text box, and proceed
-$okButton.Add_Click({
-        $window.DialogResult = $true
-        $window.Close()
-    })
+    # if OK is clicked, set the driver directory to the path in the text box, and proceed
+    $okButton.Add_Click({
+            $window.DialogResult = $true
+            $window.Close()
+        })
 
-# Show the dialog and get the result
-if ($window.ShowDialog() -eq $true) {
-    # sanatize quotes from copy pasted paths
-    $folderPath = Remove-InputPathQuotes -InputPath $pathTextBox.Text
+    # Show the dialog and get the result
+    if ($window.ShowDialog() -eq $true) {
+        # sanatize quotes from copy pasted paths
+        $folderPath = Remove-InputPathQuotes -InputPath $pathTextBox.Text
+    }
+    else {
+        $folderPath = $scriptLocation
+    }
+}
+
+# Check if ExtractionDir parameter is set
+if ($ExtractDir) {
+    # If ExtractionDir is set, use that value and do not show the GUI
+    $extractionDirectory = $ExtractDir
 }
 else {
-    $folderPath = $scriptLocation
-}
 
-# Determine the default extraction directory
-$defaultExtractionDirectory = Join-Path $folderPath "extracted"
+    # Determine the default extraction directory
+    $defaultExtractionDirectory = Join-Path $folderPath "extracted"
 
-# Load the necessary assemblies for the extraction directory prompt
-Add-Type -AssemblyName PresentationFramework
-Add-Type -AssemblyName System.Windows.Forms
+    # Load the necessary assemblies for the extraction directory prompt
+    Add-Type -AssemblyName PresentationFramework
+    Add-Type -AssemblyName System.Windows.Forms
 
-# Define the XAML for the window for the extraction directory prompt
-$xaml = @"
+    # Define the XAML for the window for the extraction directory prompt
+    $xaml = @"
 <Window xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Select Extraction Directory" Height="300" Width="500">
@@ -193,40 +207,41 @@ $xaml = @"
 </Window>
 "@
 
-# Load the XAML and create the window for the extraction directory prompt
-$reader = [System.Xml.XmlReader]::Create([System.IO.StringReader]::new($xaml))
-$window = [Windows.Markup.XamlReader]::Load($reader)
+    # Load the XAML and create the window for the extraction directory prompt
+    $reader = [System.Xml.XmlReader]::Create([System.IO.StringReader]::new($xaml))
+    $window = [Windows.Markup.XamlReader]::Load($reader)
 
-# Get references to the controls for the extraction directory prompt
-$pathTextBox = $window.FindName("pathTextBox")
-$browseButton = $window.FindName("browseButton")
-$okButton = $window.FindName("okButton")
+    # Get references to the controls for the extraction directory prompt
+    $pathTextBox = $window.FindName("pathTextBox")
+    $browseButton = $window.FindName("browseButton")
+    $okButton = $window.FindName("okButton")
 
-# Set the initial path in the text box for the extraction directory prompt
-$pathTextBox.Text = $defaultExtractionDirectory
+    # Set the initial path in the text box for the extraction directory prompt
+    $pathTextBox.Text = $defaultExtractionDirectory
 
-# If browse is clicked in the extraction directory prompt, open a folder browser dialog
-$browseButton.Add_Click({
-        $folderBrowser = New-Object System.Windows.Forms.FolderBrowserDialog
-        $folderBrowser.SelectedPath = $pathTextBox.Text
-        if ($folderBrowser.ShowDialog() -eq "OK") {
-            $pathTextBox.Text = $folderBrowser.SelectedPath
-        }
-    })
+    # If browse is clicked in the extraction directory prompt, open a folder browser dialog
+    $browseButton.Add_Click({
+            $folderBrowser = New-Object System.Windows.Forms.FolderBrowserDialog
+            $folderBrowser.SelectedPath = $pathTextBox.Text
+            if ($folderBrowser.ShowDialog() -eq "OK") {
+                $pathTextBox.Text = $folderBrowser.SelectedPath
+            }
+        })
 
-# If OK is clicked, set the extraction directory to the path in the text box, and proceed
-$okButton.Add_Click({
-        $window.DialogResult = $true
-        $window.Close()
-    })
+    # If OK is clicked, set the extraction directory to the path in the text box, and proceed
+    $okButton.Add_Click({
+            $window.DialogResult = $true
+            $window.Close()
+        })
 
-# Show the dialog and get the result
-if ($window.ShowDialog() -eq $true) {
-    # sanatize quotes from copy pasted paths
-    $extractionDirectory = Remove-InputPathQuotes -InputPath $pathTextBox.Text
-}
-else {
-    $extractionDirectory = $defaultExtractionDirectory
+    # Show the dialog and get the result
+    if ($window.ShowDialog() -eq $true) {
+        # sanatize quotes from copy pasted paths
+        $extractionDirectory = Remove-InputPathQuotes -InputPath $pathTextBox.Text
+    }
+    else {
+        $extractionDirectory = $defaultExtractionDirectory
+    }
 }
 
 # Load the necessary assemblies for the script output window
