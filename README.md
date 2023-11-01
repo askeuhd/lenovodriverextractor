@@ -18,7 +18,7 @@ The script operates by executing each driver package with specific parameters to
 To use this script, open PowerShell, navigate to the script's directory, and enter the following command:
 
 ```powershell
-.\scriptName.ps1 -ExtractDir "Path\To\Extract\Directory" -DriverDir "Path\To\Driver\Directory"
+.\lenovo.ps1 -ExtractDir "Path\To\Extract\Directory" -DriverDir "Path\To\Driver\Directory"
 ```
 
 ### Optional Parameters
